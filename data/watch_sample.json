@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "note": "HYPOTHETICAL sample feed for offline demos of Trade Watch. Not real news. Scenarios are hand-written planning estimates in the same format the AI returns."
+  },
+  "items": [
+    {
+      "title": "HYPOTHETICAL: China extends anti-dumping duties on Canadian canola seed for another year",
+      "link": "",
+      "published": "2026-10-05",
+      "source": "HYPOTHETICAL sample feed",
+      "summary": "",
+      "scenario": {
+        "affected": [
+          {"crop": "Canola", "price_change_pct": -15, "low_pct": -28, "high_pct": -5, "confidence": "medium",
+           "reasoning": "An extension keeps a major export market restricted, holding farm-gate canola prices down."},
+          {"crop": "Flax", "price_change_pct": -2, "low_pct": -6, "high_pct": 0, "confidence": "low",
+           "reasoning": "Minor spill-over pressure as oilseed acres shift."}
+        ],
+        "duration_months": 12,
+        "assumptions": ["No new export markets absorb the displaced volume within the crop year.",
+                        "The headline gives no duty rate; changes are planning estimates."],
+        "is_trade_related": true
+      }
+    },
+    {
+      "title": "HYPOTHETICAL: India removes import duty on yellow peas until March",
+      "link": "",
+      "published": "2026-10-04",
+      "source": "HYPOTHETICAL sample feed",
+      "summary": "",
+      "scenario": {
+        "affected": [
+          {"crop": "Yellow Peas", "price_change_pct": 12, "low_pct": 3, "high_pct": 20, "confidence": "medium",
+           "reasoning": "Duty-free access to a large pulse importer would raise demand for Canadian peas."},
+          {"crop": "Red Lentils", "price_change_pct": 3, "low_pct": 0, "high_pct": 8, "confidence": "low",
+           "reasoning": "Pulse demand may firm more broadly."}
+        ],
+        "duration_months": 6,
+        "assumptions": ["The window is short; benefit depends on timing of sales.",
+                        "No duty rate is stated in the headline; changes are planning estimates."],
+        "is_trade_related": true
+      }
+    },
+    {
+      "title": "HYPOTHETICAL: United States announces tariff on Canadian oats from next spring",
+      "link": "",
+      "published": "2026-10-03",
+      "source": "HYPOTHETICAL sample feed",
+      "summary": "",
+      "scenario": {
+        "affected": [
+          {"crop": "Oats", "price_change_pct": -18, "low_pct": -30, "high_pct": -6, "confidence": "medium",
+           "reasoning": "The US is the main destination for Canadian oats; a tariff would cut demand."}
+        ],
+        "duration_months": 12,
+        "assumptions": ["Tariff takes effect as announced and is not offset by a quick deal."],
+        "is_trade_related": true
+      }
+    },
+    {
+      "title": "HYPOTHETICAL: Government invests in rural broadband for Prairie communities",
+      "link": "",
+      "published": "2026-10-02",
+      "source": "HYPOTHETICAL sample feed",
+      "summary": "",
+      "scenario": {"affected": [], "duration_months": 0, "assumptions": [], "is_trade_related": false}
+    },
+    {
+      "title": "HYPOTHETICAL: New agri-food research centre opens in Saskatoon",
+      "link": "",
+      "published": "2026-10-01",
+      "source": "HYPOTHETICAL sample feed",
+      "summary": "",
+      "scenario": {"affected": [], "duration_months": 0, "assumptions": [], "is_trade_related": false}
+    }
+  ]
+}

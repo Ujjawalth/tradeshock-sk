@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "title": "Crop budgets by soil zone",
+    "source": "PLACEHOLDER - to be replaced by scripts/extract_guide.py from the official Saskatchewan Ministry of Agriculture 2026 Crop Planning Guide (data/raw/)",
+    "status": "PLACEHOLDER_UNVERIFIED",
+    "note": "UNVERIFIED: every number in this file is an illustrative placeholder so the app can run end to end. None of it comes from the Crop Planning Guide yet. Do not quote these numbers.",
+    "price_units": "CAD per unit",
+    "cost_units": "CAD per acre"
+  },
+  "rows": [
+    {"crop": "Canola",        "crop_group": "oilseed", "soil_zone": "Brown",      "target_yield": 32,   "unit": "bu", "price": 13.50, "variable_cost_per_acre": 300, "total_cost_per_acre": 420, "source_page": null, "verified": false},
+    {"crop": "CWRS Wheat",    "crop_group": "cereal",  "soil_zone": "Brown",      "target_yield": 38,   "unit": "bu", "price": 7.50,  "variable_cost_per_acre": 210, "total_cost_per_acre": 330, "source_page": null, "verified": false},
+    {"crop": "Durum",         "crop_group": "cereal",  "soil_zone": "Brown",      "target_yield": 38,   "unit": "bu", "price": 7.20,  "variable_cost_per_acre": 215, "total_cost_per_acre": 335, "source_page": null, "verified": false},
+    {"crop": "Barley",        "crop_group": "cereal",  "soil_zone": "Brown",      "target_yield": 55,   "unit": "bu", "price": 5.20,  "variable_cost_per_acre": 200, "total_cost_per_acre": 320, "source_page": null, "verified": false},
+    {"crop": "Oats",          "crop_group": "cereal",  "soil_zone": "Brown",      "target_yield": 75,   "unit": "bu", "price": 3.80,  "variable_cost_per_acre": 175, "total_cost_per_acre": 295, "source_page": null, "verified": false},
+    {"crop": "Yellow Peas",   "crop_group": "pulse",   "soil_zone": "Brown",      "target_yield": 38,   "unit": "bu", "price": 8.80,  "variable_cost_per_acre": 190, "total_cost_per_acre": 310, "source_page": null, "verified": false},
+    {"crop": "Red Lentils",   "crop_group": "pulse",   "soil_zone": "Brown",      "target_yield": 1300, "unit": "lb", "price": 0.30,  "variable_cost_per_acre": 210, "total_cost_per_acre": 330, "source_page": null, "verified": false},
+    {"crop": "Flax",          "crop_group": "oilseed", "soil_zone": "Brown",      "target_yield": 22,   "unit": "bu", "price": 15.00, "variable_cost_per_acre": 180, "total_cost_per_acre": 300, "source_page": null, "verified": false},
+
+    {"crop": "Canola",        "crop_group": "oilseed", "soil_zone": "Dark Brown", "target_yield": 40,   "unit": "bu", "price": 13.50, "variable_cost_per_acre": 330, "total_cost_per_acre": 460, "source_page": null, "verified": false},
+    {"crop": "CWRS Wheat",    "crop_group": "cereal",  "soil_zone": "Dark Brown", "target_yield": 46,   "unit": "bu", "price": 7.50,  "variable_cost_per_acre": 235, "total_cost_per_acre": 365, "source_page": null, "verified": false},
+    {"crop": "Durum",         "crop_group": "cereal",  "soil_zone": "Dark Brown", "target_yield": 45,   "unit": "bu", "price": 7.20,  "variable_cost_per_acre": 240, "total_cost_per_acre": 370, "source_page": null, "verified": false},
+    {"crop": "Barley",        "crop_group": "cereal",  "soil_zone": "Dark Brown", "target_yield": 68,   "unit": "bu", "price": 5.20,  "variable_cost_per_acre": 225, "total_cost_per_acre": 355, "source_page": null, "verified": false},
+    {"crop": "Oats",          "crop_group": "cereal",  "soil_zone": "Dark Brown", "target_yield": 95,   "unit": "bu", "price": 3.80,  "variable_cost_per_acre": 200, "total_cost_per_acre": 330, "source_page": null, "verified": false},
+    {"crop": "Yellow Peas",   "crop_group": "pulse",   "soil_zone": "Dark Brown", "target_yield": 45,   "unit": "bu", "price": 8.80,  "variable_cost_per_acre": 205, "total_cost_per_acre": 335, "source_page": null, "verified": false},
+    {"crop": "Red Lentils",   "crop_group": "pulse",   "soil_zone": "Dark Brown", "target_yield": 1500, "unit": "lb", "price": 0.30,  "variable_cost_per_acre": 225, "total_cost_per_acre": 355, "source_page": null, "verified": false},
+    {"crop": "Flax",          "crop_group": "oilseed", "soil_zone": "Dark Brown", "target_yield": 26,   "unit": "bu", "price": 15.00, "variable_cost_per_acre": 200, "total_cost_per_acre": 330, "source_page": null, "verified": false},
+
+    {"crop": "Canola",        "crop_group": "oilseed", "soil_zone": "Black",      "target_yield": 48,   "unit": "bu", "price": 13.50, "variable_cost_per_acre": 360, "total_cost_per_acre": 510, "source_page": null, "verified": false},
+    {"crop": "CWRS Wheat",    "crop_group": "cereal",  "soil_zone": "Black",      "target_yield": 55,   "unit": "bu", "price": 7.50,  "variable_cost_per_acre": 260, "total_cost_per_acre": 410, "source_page": null, "verified": false},
+    {"crop": "Durum",         "crop_group": "cereal",  "soil_zone": "Black",      "target_yield": 48,   "unit": "bu", "price": 7.20,  "variable_cost_per_acre": 255, "total_cost_per_acre": 405, "source_page": null, "verified": false},
+    {"crop": "Barley",        "crop_group": "cereal",  "soil_zone": "Black",      "target_yield": 80,   "unit": "bu", "price": 5.20,  "variable_cost_per_acre": 250, "total_cost_per_acre": 400, "source_page": null, "verified": false},
+    {"crop": "Oats",          "crop_group": "cereal",  "soil_zone": "Black",      "target_yield": 115,  "unit": "bu", "price": 3.80,  "variable_cost_per_acre": 225, "total_cost_per_acre": 375, "source_page": null, "verified": false},
+    {"crop": "Yellow Peas",   "crop_group": "pulse",   "soil_zone": "Black",      "target_yield": 50,   "unit": "bu", "price": 8.80,  "variable_cost_per_acre": 220, "total_cost_per_acre": 370, "source_page": null, "verified": false},
+    {"crop": "Red Lentils",   "crop_group": "pulse",   "soil_zone": "Black",      "target_yield": 1500, "unit": "lb", "price": 0.30,  "variable_cost_per_acre": 235, "total_cost_per_acre": 385, "source_page": null, "verified": false},
+    {"crop": "Flax",          "crop_group": "oilseed", "soil_zone": "Black",      "target_yield": 30,   "unit": "bu", "price": 15.00, "variable_cost_per_acre": 215, "total_cost_per_acre": 365, "source_page": null, "verified": false}
+  ]
+}

@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TradeShock SK</title>
+  <meta name="description" content="Stress-test a Saskatchewan grain farm's crop plan against a trade headline.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23a8641a'/><path d='M8 22 L14 14 L18 18 L24 9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div>
+        <h1 class="brand">TradeShock <span>SK</span></h1>
+        <p class="tagline">See what a trade headline does to your crop plan before you buy seed.</p>
+      </div>
+      <div class="pills">
+        <button id="btn-tour" class="btn primary tour-btn" type="button">▶ Demo tour</button>
+        <span id="ai-pill" class="pill">AI: checking…</span>
+      </div>
+    </div>
+  </header>
+
+  <div id="data-banner" class="banner warn" hidden>
+    <div class="wrap">
+      <strong>UNVERIFIED data.</strong>
+      <span id="data-banner-text"></span>
+    </div>
+  </div>
+
+  <nav class="quicknav" aria-label="Sections">
+    <div class="wrap quicknav-inner" id="quicknav">
+      <a href="#step-profile">Farm</a>
+      <a href="#step-watch">Trade Watch</a>
+      <a href="#step-headline">Headline</a>
+      <a href="#step-results">Shock plan</a>
+      <a href="#step-explain">Summary</a>
+      <a href="#step-sweep">Tipping points</a>
+      <a href="#step-risk">Risk</a>
+      <a href="#step-ask">Ask AI</a>
+      <a href="#step-income">Income</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <!-- 1. Farm profile -->
+    <section class="card" id="step-profile" aria-labelledby="h-profile">
+      <div class="step-head">
+        <span class="step-no">1</span>
+        <h2 id="h-profile">Farm profile</h2>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <span class="label" id="zone-label">Soil zone</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="zone-label" id="zone-group"></div>
+        </div>
+        <div class="field">
+          <label class="label" for="acres">Total acres</label>
+          <input id="acres" type="number" inputmode="numeric" min="10" max="200000" step="10" value="2000">
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label">Crops you can grow</span>
+        <div class="chips" id="crop-chips"></div>
+      </div>
+
+      <details class="limits">
+        <summary>Rotation limits <span class="tag">ASSUMPTIONS</span></summary>
+        <p class="hint">Simple agronomic guard-rails, not rules from the guide. Edit to match your rotation.</p>
+        <div class="grid-4">
+          <div class="field"><label class="label" for="lim-canola">Canola max %</label><input id="lim-canola" type="number" min="0" max="100" step="1"></div>
+          <div class="field"><label class="label" for="lim-pulses">Pulses max %</label><input id="lim-pulses" type="number" min="0" max="100" step="1"></div>
+          <div class="field"><label class="label" for="lim-single">Any one crop max %</label><input id="lim-single" type="number" min="1" max="100" step="1"></div>
+          <div class="field"><label class="label" for="lim-cereals">Cereals min %</label><input id="lim-cereals" type="number" min="0" max="100" step="1"></div>
+        </div>
+      </details>
+
+      <button id="btn-baseline" class="btn primary">Build baseline plan</button>
+      <p class="error" id="profile-error" role="alert" hidden></p>
+
+      <div id="baseline-out" hidden>
+        <div class="tiles tiles-1">
+          <div class="tile">
+            <div class="tile-label">Baseline return over variable costs</div>
+            <div class="tile-value" id="baseline-total">–</div>
+            <div class="tile-sub" id="baseline-per-acre"></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data" id="baseline-table">
+            <thead><tr><th>Crop</th><th class="num">Acres</th><th class="num">Share</th><th class="num">Return $/ac</th><th class="num">Break-even price</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trade Watch automation -->
+    <section class="card" id="step-watch" aria-labelledby="h-watch">
+      <div class="step-head">
+        <span class="step-no">⚡</span>
+        <h2 id="h-watch">Trade Watch</h2>
+        <span class="tag">AUTOMATION</span>
+      </div>
+      <p class="hint">Scans official Government of Canada news (Agriculture and Agri-Food Canada, Finance Canada). The AI flags trade items, and each one is stress-tested against your farm and ranked by dollar impact.</p>
+      <div class="btn-row">
+        <button class="btn primary" id="btn-watch-live" type="button">Scan official news</button>
+        <button class="btn ghost" id="btn-watch-sample" type="button">Demo feed (HYPOTHETICAL)</button>
+      </div>
+      <p class="loading" id="watch-loading" hidden><span class="spinner"></span> Scanning feeds and stress-testing each item…</p>
+      <p class="error" id="watch-error" role="alert" hidden></p>
+      <div id="watch-out" hidden>
+        <p class="hint" id="watch-meta"></p>
+        <ul class="alerts" id="watch-alerts"></ul>
+        <details class="watch-other" id="watch-other-box">
+          <summary id="watch-other-sum"></summary>
+          <ul id="watch-other"></ul>
+        </details>
+      </div>
+    </section>
+
+    <!-- 2. Headline -> scenario -->
+    <section class="card" id="step-headline" aria-labelledby="h-headline">
+      <div class="step-head">
+        <span class="step-no">2</span>
+        <h2 id="h-headline">Trade headline → scenario</h2>
+      </div>
+
+      <div class="field">
+        <span class="label">Try a demo headline <span class="tag hypo">HYPOTHETICAL</span></span>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="headline">…or paste a real headline</label>
+        <textarea id="headline" rows="3" maxlength="{{ max_headline }}" placeholder="e.g. China extends duties on Canadian canola meal into next year"></textarea>
+        <div class="row-between">
+          <span class="hint" id="headline-count">0 / {{ max_headline }}</span>
+          <div class="btn-row">
+            <button id="btn-manual" class="btn ghost" type="button">Set prices by hand</button>
+            <button id="btn-analyze" class="btn primary" type="button">Analyze headline</button>
+          </div>
+        </div>
+      </div>
+      <p class="error" id="headline-error" role="alert" hidden></p>
+      <p class="loading" id="headline-loading" hidden><span class="spinner"></span> Reading the headline…</p>
+
+      <div id="scenario-out" hidden>
+        <div class="notice" id="not-trade" hidden>
+          This headline doesn't look trade- or price-related, so there's nothing to stress-test.
+          Try a headline about tariffs, export markets or crop prices, or use a demo headline.
+        </div>
+        <div id="scenario-body">
+          <div class="scenario-meta">
+            <span class="badge" id="scenario-source"></span>
+            <span class="hint" id="scenario-headline"></span>
+          </div>
+          <p class="hint">Price changes are the AI's planning estimate. <strong>You have the final say:</strong> drag any slider and the plan updates.</p>
+          <div id="sliders"></div>
+          <div class="row-wrap">
+            <label class="label inline" for="add-crop">Add a crop</label>
+            <select id="add-crop"></select>
+            <label class="label inline" for="duration">Duration (months)</label>
+            <input id="duration" type="number" min="0" max="60" step="1" class="narrow">
+          </div>
+          <div class="assumptions">
+            <h3>Assumptions</h3>
+            <ul id="assumptions"></ul>
+            <p class="hint" id="dropped" hidden></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Shock plan -->
+    <section class="card" id="step-results" aria-labelledby="h-results" hidden>
+      <div class="step-head">
+        <span class="step-no">3</span>
+        <h2 id="h-results">Baseline vs shock plan</h2>
+      </div>
+
+      <div class="tiles">
+        <div class="tile">
+          <div class="tile-label">Baseline plan</div>
+          <div class="tile-value" id="k-baseline">–</div>
+          <div class="tile-sub">at today's budget prices</div>
+        </div>
+        <div class="tile">
+          <div class="tile-label">Keep old plan</div>
+          <div class="tile-value" id="k-stand">–</div>
+          <div class="tile-sub">baseline mix at shock prices</div>
+        </div>
+        <div class="tile accent">
+          <div class="tile-label">Re-planned</div>
+          <div class="tile-value" id="k-shock">–</div>
+          <div class="tile-sub" id="k-shock-sub"></div>
+        </div>
+        <div class="tile good">
+          <div class="tile-label">Value of re-planning</div>
+          <div class="tile-value" id="k-value">–</div>
+          <div class="tile-sub">re-planned vs keeping old plan</div>
+        </div>
+      </div>
+      <p class="hint">All figures are return over variable costs for the whole farm.</p>
+      <p class="tradeoff" id="income-line" hidden></p>
+
+      <div class="chart-box">
+        <h3>Acres per crop</h3>
+        <div class="legend" aria-hidden="true">
+          <span><i class="sw sw-1"></i>Baseline</span><span><i class="sw sw-2"></i>Shock plan</span>
+        </div>
+        <div class="chart-holder"><canvas id="acres-chart" aria-label="Acres per crop, baseline versus shock plan" role="img"></canvas></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data" id="compare-table">
+          <thead><tr><th>Crop</th><th class="num">Price Δ</th><th class="num">Baseline ac</th><th class="num">Shock ac</th><th class="num">Change</th><th class="num">Shock $/ac</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="cases-box" id="cases-box" hidden>
+        <h3>Bear / base / bull: which plan holds up?</h3>
+        <p class="hint" id="cases-hint"></p>
+        <div class="table-wrap">
+          <table class="data" id="cases-table">
+            <thead><tr><th>Plan</th><th class="num">Bear</th><th class="num">Base</th><th class="num">Bull</th><th class="num">Worst regret</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="tradeoff" id="cases-verdict"></p>
+      </div>
+    </section>
+
+    <!-- 4. Explanation -->
+    <section class="card" id="step-explain" aria-labelledby="h-explain" hidden>
+      <div class="step-head">
+        <span class="step-no">4</span>
+        <h2 id="h-explain">What it means</h2>
+        <span class="badge" id="explain-source"></span>
+      </div>
+      <p class="loading" id="explain-loading" hidden><span class="spinner"></span> Writing a plain-English summary…</p>
+      <div id="explanation" class="explanation"></div>
+      <button id="btn-explain" class="btn ghost" type="button" hidden>Update summary for new sliders</button>
+      <p class="disclaimer">{{ disclaimer }}</p>
+      <div class="btn-row spaced">
+        <button id="btn-print" class="btn ghost" type="button">Export 1-page plan (PDF)</button>
+        <button id="btn-share" class="btn ghost" type="button">Copy share link</button>
+        <span class="hint" id="share-status" role="status"></span>
+      </div>
+    </section>
+
+    <!-- 5. Stress sweep -->
+    <section class="card" id="step-sweep" aria-labelledby="h-sweep" hidden>
+      <div class="step-head">
+        <span class="step-no">5</span>
+        <h2 id="h-sweep">Stress sweep: where does the plan tip?</h2>
+      </div>
+      <div class="row-wrap">
+        <label class="label inline" for="sweep-crop">Sweep the price of</label>
+        <select id="sweep-crop"></select>
+      </div>
+      <p class="hint">Re-optimizes the farm at every price change from −60% to +60% (other scenario prices held). Big dots mark tipping points where the best crop mix changes.</p>
+      <div class="chart-holder tall"><canvas id="sweep-chart" aria-label="Farm return versus price change" role="img"></canvas></div>
+      <ul id="tipping" class="tipping"></ul>
+    </section>
+
+    <!-- Risk lens -->
+    <section class="card" id="step-risk" aria-labelledby="h-risk" hidden>
+      <div class="step-head">
+        <span class="step-no">R</span>
+        <h2 id="h-risk">Risk lens: replay real price and yield history</h2>
+        <span class="tag">STATISTICS CANADA DATA</span>
+      </div>
+      <p class="hint" id="risk-intro"></p>
+      <div class="field">
+        <label class="label" for="risk-aversion">How much do you care about bad years?</label>
+        <input id="risk-aversion" type="range" min="0" max="100" step="25" value="50" aria-describedby="risk-aversion-hint">
+        <div class="row-between hint" id="risk-aversion-hint"><span>Maximize the average</span><span id="risk-aversion-val">Balanced</span><span>Protect bad years</span></div>
+      </div>
+      <label class="chip" id="risk-yield-wrap"><input type="checkbox" id="risk-yield" checked> Include yield risk (drought years like 2002 and 2021)</label>
+
+      <div class="risk-grid">
+        <div class="risk-col">
+          <h3><i class="sw sw-1"></i>Return-max plan</h3>
+          <dl class="risk-dl" id="risk-max"></dl>
+        </div>
+        <div class="risk-col">
+          <h3><i class="sw sw-3"></i>Risk-aware plan</h3>
+          <dl class="risk-dl" id="risk-safe"></dl>
+        </div>
+      </div>
+      <p class="tradeoff" id="risk-tradeoff"></p>
+
+      <div class="chart-box">
+        <h3>Farm return across historical scenarios</h3>
+        <div class="legend" aria-hidden="true">
+          <span><i class="sw sw-1"></i>Return-max plan</span><span><i class="sw sw-3"></i>Risk-aware plan</span>
+        </div>
+        <div class="chart-holder"><canvas id="risk-hist" role="img" aria-label="Histogram of farm return across historical price moves"></canvas></div>
+      </div>
+      <div class="table-wrap">
+        <table class="data" id="risk-table">
+          <thead><tr><th>Crop</th><th class="num">Return-max ac</th><th class="num">Risk-aware ac</th><th class="num">Price swing (sd)</th><th class="num">Yield swing (sd)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint" id="risk-source"></p>
+    </section>
+
+    <!-- Ask TradeShock agent -->
+    <section class="card" id="step-ask" aria-labelledby="h-ask" hidden>
+      <div class="step-head">
+        <span class="step-no">?</span>
+        <h2 id="h-ask">Ask TradeShock</h2>
+        <span class="tag">AI AGENT</span>
+      </div>
+      <p class="hint">Ask a what-if in plain English. The agent calls the optimizer and risk engine as tools, so every number comes from the optimizer, not from the AI guessing.</p>
+      <div class="suggestions" id="ask-suggestions"></div>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <form class="ask-row" id="ask-form">
+        <label class="sr-only" for="ask-input">Your question</label>
+        <input id="ask-input" type="text" maxlength="500" autocomplete="off" placeholder="What if peas drop 20% and I cap canola at 25%?">
+        <button class="btn primary" id="btn-ask" type="submit">Ask</button>
+      </form>
+    </section>
+
+    <!-- Other farm income (surface lease) -->
+    <section class="card" id="step-income" aria-labelledby="h-income">
+      <div class="step-head">
+        <span class="step-no">$</span>
+        <h2 id="h-income">Other farm income</h2>
+        <span class="tag">AI EXTRACTION</span>
+      </div>
+      <p class="hint">Upload a surface lease (wellsite, pipeline, power line) as .txt or .pdf. The AI pulls out the annual payment and the next compensation review date, and each value is checked against a word-for-word quote from the document. Use SYNTHETIC documents only.</p>
+      <div class="btn-row">
+        <button class="btn ghost" id="btn-lease-sample" type="button">Load SYNTHETIC sample lease</button>
+        <label class="btn ghost file-btn">Upload lease…<input id="lease-file" type="file" accept=".txt,.pdf,text/plain,application/pdf"></label>
+      </div>
+      <p class="loading" id="lease-loading" hidden><span class="spinner"></span> Reading the lease…</p>
+      <p class="error" id="lease-error" role="alert" hidden></p>
+      <div id="lease-out" hidden>
+        <dl class="risk-dl lease-dl" id="lease-dl"></dl>
+        <label class="chip lease-toggle"><input type="checkbox" id="lease-include" checked> Add to farm totals as stable income</label>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="tour-toast" id="tour-toast" role="status" aria-live="polite" hidden>
+    <div class="tour-step" id="tour-step"></div>
+    <div class="tour-text" id="tour-text"></div>
+    <button class="btn ghost" id="tour-stop" type="button">Stop tour</button>
+  </div>
+
+  <!-- Print-only one-page report (filled by app.js just before printing) -->
+  <div id="print-report" aria-hidden="true"></div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><strong>{{ disclaimer }}</strong> Scenarios are hypothetical estimates. Demo headlines are labelled HYPOTHETICAL and are not news.</p>
+      <p id="data-source" class="hint"></p>
+      <p class="hint">Built for SCAI AI Open Saskatoon 2026.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='chart-fallback.js') }}"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

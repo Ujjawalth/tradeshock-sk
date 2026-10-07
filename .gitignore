@@ -1,0 +1,21 @@
+# Secrets
+.env
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Runtime files written by Trade Watch
+data/watch_cache.json
+data/watch_report.json
+
+# Large source PDFs (official guide is downloaded manually)
+data/raw/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

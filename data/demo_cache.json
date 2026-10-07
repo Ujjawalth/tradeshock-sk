@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "note": "HYPOTHETICAL demo headlines. Scenarios are cached so presets work offline. Regenerate live AI output with: python scripts/build_demo_cache.py",
+    "generated_by": "seed (hand-written starter values; run scripts/build_demo_cache.py with an API key to replace with live model output)",
+    "prompt_version": "seed"
+  },
+  "presets": [
+    {
+      "id": "canola-duties",
+      "label": "China widens canola duties",
+      "headline": "HYPOTHETICAL: China announces new duties on Canadian canola seed and canola meal, effective next month, with no end date set.",
+      "scenario": {
+        "affected": [
+          {
+            "crop": "Canola",
+            "price_change_pct": -18,
+            "confidence": "medium",
+            "reasoning": "China is a major buyer of Canadian canola seed and meal; new duties would reduce demand and pressure farm-gate canola prices.",
+            "low_pct": -30,
+            "high_pct": -8
+          },
+          {
+            "crop": "Flax",
+            "price_change_pct": -3,
+            "confidence": "low",
+            "reasoning": "Some oilseed acres and supply could shift toward flax, adding mild price pressure.",
+            "low_pct": -8,
+            "high_pct": 0
+          }
+        ],
+        "duration_months": 12,
+        "assumptions": [
+          "Duties apply to both seed and meal and are not offset by other export markets in the near term.",
+          "Effect is a planning estimate, not a forecast; the size of the duty is not stated in the headline.",
+          "Other crop prices are unaffected except where listed."
+        ],
+        "is_trade_related": true
+      }
+    },
+    {
+      "id": "pea-relief-expires",
+      "label": "Pea tariff relief expires",
+      "headline": "HYPOTHETICAL: Temporary tariff relief on Canadian peas expires at the end of the year and is not renewed.",
+      "scenario": {
+        "affected": [
+          {
+            "crop": "Yellow Peas",
+            "price_change_pct": -15,
+            "confidence": "medium",
+            "reasoning": "Losing tariff relief makes Canadian peas less competitive in that market, lowering expected farm-gate prices.",
+            "low_pct": -25,
+            "high_pct": -5
+          },
+          {
+            "crop": "Red Lentils",
+            "price_change_pct": -4,
+            "confidence": "low",
+            "reasoning": "Pulse acres may shift from peas to lentils, adding modest supply pressure.",
+            "low_pct": -10,
+            "high_pct": 0
+          }
+        ],
+        "duration_months": 12,
+        "assumptions": [
+          "Relief ends as stated and no replacement market fully absorbs the volume.",
+          "The headline gives no tariff rate; the price change is a planning estimate.",
+          "Other crops are unaffected except where listed."
+        ],
+        "is_trade_related": true
+      }
+    },
+    {
+      "id": "oats-us-tariff",
+      "label": "US tariff on Canadian oats & wheat",
+      "headline": "HYPOTHETICAL: United States imposes a new tariff on imports of Canadian oats and wheat starting this spring.",
+      "scenario": {
+        "affected": [
+          {
+            "crop": "Oats",
+            "price_change_pct": -20,
+            "confidence": "medium",
+            "reasoning": "The US is a key destination for Canadian oats; a tariff would cut demand and lower prices received by Prairie growers.",
+            "low_pct": -32,
+            "high_pct": -8
+          },
+          {
+            "crop": "CWRS Wheat",
+            "price_change_pct": -6,
+            "confidence": "low",
+            "reasoning": "Wheat has more alternative export markets, so the price impact is likely smaller than for oats.",
+            "low_pct": -12,
+            "high_pct": 0
+          },
+          {
+            "crop": "Durum",
+            "price_change_pct": -4,
+            "confidence": "low",
+            "reasoning": "Durum may see indirect pressure if wheat exports are redirected.",
+            "low_pct": -10,
+            "high_pct": 0
+          }
+        ],
+        "duration_months": 18,
+        "assumptions": [
+          "Tariff applies to oats and wheat and lasts beyond one crop year.",
+          "The tariff rate is not given; changes are planning estimates.",
+          "Canola and pulse prices are unaffected."
+        ],
+        "is_trade_related": true
+      }
+    }
+  ],
+  "explanations": {}
+}
