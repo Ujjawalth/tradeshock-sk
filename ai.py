@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 
 import anthropic
@@ -50,6 +51,23 @@ def _get_client() -> anthropic.Anthropic:
     return _client
 
 
+_budget_lock = threading.Lock()
+_budget = {"day": None, "calls": 0}
+
+
+def _spend_budget() -> None:
+    """Global daily cap on AI calls (per server process) so nobody can drain the API credit.
+    Over the cap, every feature falls back to its offline mode."""
+    limit = int(os.getenv("AI_DAILY_CALL_LIMIT", "300"))
+    today = time.strftime("%Y-%m-%d")
+    with _budget_lock:
+        if _budget["day"] != today:
+            _budget["day"], _budget["calls"] = today, 0
+        if _budget["calls"] >= limit:
+            raise AIUnavailable("daily AI limit reached; offline mode until tomorrow")
+        _budget["calls"] += 1
+
+
 def create_message(prompt_version: str, **kwargs):
     """Low-level Messages API call shared by every AI feature.
 
@@ -58,6 +76,7 @@ def create_message(prompt_version: str, **kwargs):
     """
     global _fallbacks_ok
     client = _get_client()
+    _spend_budget()
     kwargs.setdefault("model", _model())
     kwargs.setdefault("output_config", {})
     kwargs["output_config"].setdefault("effort", os.getenv("AI_EFFORT", "low"))

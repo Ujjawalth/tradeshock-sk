@@ -12,3 +12,7 @@ services:
         value: claude-opus-5-5
       - key: ANTHROPIC_API_KEY
         sync: false   # set in the Render dashboard, never in git
+      - key: AI_DAILY_CALL_LIMIT
+        value: "300"  # per worker; caps API spend if someone hammers the site
+      - key: AI_RATE_LIMIT_PER_MIN
+        value: "10"

@@ -22,6 +22,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 from pydantic import ValidationError
 
 load_dotenv()
@@ -40,6 +41,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 log = logging.getLogger("tradeshock.app")
 
 app = Flask(__name__)
+# Behind Render's single proxy: take the client IP from the hop the proxy appended.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 app.json.sort_keys = False  # keep soil zones in Brown -> Dark Brown -> Black order
 LEASE_MAX_BYTES = 2 * 1024 * 1024
 app.config["MAX_CONTENT_LENGTH"] = LEASE_MAX_BYTES + 64 * 1024  # small JSON, or one lease file
@@ -83,8 +86,9 @@ ai_limiter = RateLimiter(int(os.getenv("AI_RATE_LIMIT_PER_MIN", "10")))
 
 
 def client_ip() -> str:
-    fwd = request.headers.get("X-Forwarded-For", "")
-    return fwd.split(",")[0].strip() or request.remote_addr or "unknown"
+    # ProxyFix (below) trusts only the LAST X-Forwarded-For hop, which Render's proxy adds.
+    # The first entries are client-supplied and could be faked to dodge the rate limit.
+    return request.remote_addr or "unknown"
 
 
 def rate_limited():

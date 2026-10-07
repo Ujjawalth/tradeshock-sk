@@ -74,6 +74,25 @@ def test_sensitivity(client):
     assert res.status_code == 400
 
 
+def test_rate_limit_cannot_be_dodged_with_fake_forwarded_for(client, monkeypatch):
+    monkeypatch.setattr(app_module.ai_limiter, "per_minute", 2)
+    payload = {"preset_id": "canola-duties", "profile": PROFILE}
+    codes = [client.post("/api/scenario", json=payload,
+                         headers={"X-Forwarded-For": f"10.0.0.{i}, 203.0.113.7"}).status_code
+             for i in range(3)]
+    assert codes == [200, 200, 429]  # same real client (last hop) despite fake first entries
+
+
+def test_daily_ai_budget_cap(monkeypatch):
+    import ai
+    monkeypatch.setenv("AI_DAILY_CALL_LIMIT", "2")
+    monkeypatch.setattr(ai, "_budget", {"day": None, "calls": 0})
+    ai._spend_budget()
+    ai._spend_budget()
+    with pytest.raises(ai.AIUnavailable, match="daily AI limit"):
+        ai._spend_budget()
+
+
 def test_ai_rate_limit(client, monkeypatch):
     monkeypatch.setattr(app_module.ai_limiter, "per_minute", 2)
     payload = {"preset_id": "canola-duties", "profile": PROFILE}
