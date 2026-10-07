@@ -12,6 +12,7 @@ Run on a schedule with scripts/watch_scan.py (cron / Task Scheduler / Render cro
 """
 from __future__ import annotations
 
+import contextvars
 import hashlib
 import html
 import json
@@ -152,8 +153,11 @@ def triage(items: list[dict], crops: list[str], use_ai: bool) -> list[dict]:
     for it in todo[MAX_AI_ITEMS:]:
         it["triage"] = "deferred"  # picked up by the next scan
     if batch:
+        # Copy the request context into each worker so the admin AI lock still applies there.
         with ThreadPoolExecutor(max_workers=4) as pool:
-            list(pool.map(run, batch))
+            futures = [pool.submit(contextvars.copy_context().run, run, it) for it in batch]
+            for f in futures:
+                f.result()
         with _cache_lock:
             cache = _load_cache()
             for it in batch:

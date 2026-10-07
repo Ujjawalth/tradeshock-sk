@@ -27,6 +27,7 @@ from pydantic import ValidationError
 
 load_dotenv()
 
+import access  # noqa: E402
 import agent  # noqa: E402
 import ai  # noqa: E402  (needs env loaded first)
 import lease  # noqa: E402
@@ -63,10 +64,11 @@ DEMO_CACHE = load_cache()
 
 # ---------------------------------------------------------------- rate limit
 class RateLimiter:
-    """Sliding-window limit per client IP (in memory; fine for one small instance)."""
+    """Sliding-window limit per key (in memory, per server process)."""
 
-    def __init__(self, per_minute: int):
-        self.per_minute = per_minute
+    def __init__(self, per_minute: int, window_s: float = 60):
+        self.per_minute = per_minute   # max hits per window
+        self.window_s = window_s
         self.hits: dict[str, deque] = defaultdict(deque)
         self.lock = threading.Lock()
 
@@ -74,7 +76,7 @@ class RateLimiter:
         now = time.monotonic()
         with self.lock:
             q = self.hits[key]
-            while q and now - q[0] > 60:
+            while q and now - q[0] > self.window_s:
                 q.popleft()
             if len(q) >= self.per_minute:
                 return False
@@ -83,10 +85,13 @@ class RateLimiter:
 
 
 ai_limiter = RateLimiter(int(os.getenv("AI_RATE_LIMIT_PER_MIN", "10")))
+# Password guessing: 5 tries / 15 min per IP, and 30 / 15 min across everyone.
+unlock_limiter = RateLimiter(5, window_s=15 * 60)
+unlock_global_limiter = RateLimiter(30, window_s=15 * 60)
 
 
 def client_ip() -> str:
-    # ProxyFix (below) trusts only the LAST X-Forwarded-For hop, which Render's proxy adds.
+    # ProxyFix trusts only the LAST X-Forwarded-For hop, which Render's proxy adds.
     # The first entries are client-supplied and could be faked to dodge the rate limit.
     return request.remote_addr or "unknown"
 
@@ -122,6 +127,12 @@ def bad_request(msg: str, code: int = 400):
 
 def facts_key(facts: dict) -> str:
     return hashlib.sha256(json.dumps(facts, sort_keys=True).encode()).hexdigest()[:24]
+
+
+@app.before_request
+def apply_ai_lock():
+    """Admin lock: live AI only for requests carrying a valid unlock cookie."""
+    ai.request_ai_allowed.set(access.ai_allowed(request.cookies.get(access.COOKIE_NAME)))
 
 
 CSP = ("default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self'; "
@@ -189,6 +200,9 @@ def config():
         data_source=meta.get("source", ""),
         data_verified=all(r.verified for r in rows),
         ai_available=ai.available(),
+        ai_configured=bool(os.getenv("ANTHROPIC_API_KEY")),
+        ai_locked=access.lock_enabled() and not ai.request_ai_allowed.get(),
+        ai_lock_enabled=access.lock_enabled(),
         risk_available=risk.available(),
         yield_risk_available=risk.yield_available(),
         max_headline=MAX_HEADLINE_CHARS,
@@ -248,6 +262,9 @@ def scenario_route():
     if len(headline) < 8:
         return bad_request("Please paste a headline (at least a few words).")
     try:
+        if access.lock_enabled() and not ai.request_ai_allowed.get():
+            return jsonify(error="Live AI is locked. Unlock it with the admin password (top of the page), "
+                                 "or try a HYPOTHETICAL preset, which works without AI.", locked=True), 403
         scenario = ai.headline_to_scenario(headline, crops)
     except ai.AIUnavailable as exc:
         return jsonify(error=f"AI unavailable: {exc}. Try a HYPOTHETICAL preset (works offline) "
@@ -298,6 +315,33 @@ def risk_route():
         return bad_request("risk_aversion must be a number between 0 and 1.")
     include_yield = data.get("include_yield", True) is not False
     return jsonify(risk=risk.analyze(profile, scenario.price_changes(), lam, include_yield=include_yield))
+
+
+@app.post("/api/unlock")
+def unlock_route():
+    """Admin password -> signed, HttpOnly unlock cookie (12 h)."""
+    if not access.lock_enabled():
+        return jsonify(ok=True, locked=False)
+    if not unlock_limiter.allow(client_ip()) or not unlock_global_limiter.allow("all"):
+        return jsonify(error="Too many attempts. Try again in 15 minutes."), 429
+    if access.password_too_weak():
+        log.error("AI_ACCESS_PASSWORD is shorter than %d characters; refusing to unlock", access.MIN_LENGTH)
+        return jsonify(error="The admin password on the server is too short, so AI stays locked."), 503
+    if not access.check_password(str(body().get("password", ""))[:200]):
+        log.warning("failed AI unlock attempt")  # never log the attempted password
+        return jsonify(error="Wrong password."), 401
+    resp = jsonify(ok=True, locked=False)
+    resp.set_cookie(access.COOKIE_NAME, access.make_token(), max_age=access.TOKEN_TTL_SECONDS,
+                    httponly=True, secure=request.is_secure, samesite="Strict", path="/")
+    return resp
+
+
+@app.post("/api/lock")
+def lock_route():
+    """Forget this browser's unlock."""
+    resp = jsonify(ok=True)
+    resp.delete_cookie(access.COOKIE_NAME, path="/", samesite="Strict")
+    return resp
 
 
 @app.post("/api/watch")

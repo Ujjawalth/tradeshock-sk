@@ -18,6 +18,7 @@
       <div class="pills">
         <button id="btn-tour" class="btn primary tour-btn" type="button">▶ Demo tour</button>
         <span id="ai-pill" class="pill">AI: checking…</span>
+        <button id="btn-lock" class="pill pill-btn" type="button" hidden></button>
       </div>
     </div>
   </header>
@@ -349,6 +350,20 @@
     </section>
 
   </main>
+
+  <dialog id="unlock-dialog" class="unlock-dialog" aria-labelledby="unlock-title">
+    <form id="unlock-form" method="dialog">
+      <h2 id="unlock-title">Unlock live AI</h2>
+      <p class="hint">Live AI uses the owner's API credit, so it's password-protected. Everything else works without it.</p>
+      <label class="label" for="unlock-password">Admin password</label>
+      <input id="unlock-password" type="password" autocomplete="current-password" maxlength="200" required>
+      <p class="error" id="unlock-error" role="alert" hidden></p>
+      <div class="btn-row spaced">
+        <button class="btn primary" type="submit" id="btn-unlock">Unlock</button>
+        <button class="btn ghost" type="button" id="btn-unlock-cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
 
   <div class="tour-toast" id="tour-toast" role="status" aria-live="polite" hidden>
     <div class="tour-step" id="tour-step"></div>

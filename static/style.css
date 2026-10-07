@@ -241,6 +241,15 @@ table.data tfoot td { font-weight: 700; border-bottom: 0; }
 .lease-dl .quote { grid-column: 1 / -1; font-weight: 400; text-align: left; font-size: .8rem; color: var(--muted); font-style: italic; margin-bottom: 4px; }
 .lease-toggle { margin-top: 10px; }
 
+/* Admin unlock */
+.pill-btn { cursor: pointer; font: inherit; font-size: .8rem; }
+.pill-btn:hover { border-color: var(--brand); color: var(--ink); }
+.unlock-dialog { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; width: min(420px, calc(100% - 32px));
+  background: var(--surface); color: var(--ink); box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+.unlock-dialog::backdrop { background: rgba(0,0,0,.45); }
+.unlock-dialog input[type=password] { width: 100%; font: inherit; color: var(--ink); background: var(--page);
+  border: 1px solid var(--line-strong); border-radius: 10px; padding: 9px 11px; }
+
 /* Demo tour */
 .pills { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .tour-btn { padding: 6px 12px; font-size: .85rem; }

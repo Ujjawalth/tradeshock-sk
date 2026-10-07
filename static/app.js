@@ -1013,6 +1013,51 @@
     buildBaseline().then((ok) => ok && runShock({ explain: true, sweep: true }));
   }
 
+  // ------------------------------------------------------------ admin AI lock
+  function renderAiStatus() {
+    const cfg = S.config;
+    const pill = $("ai-pill");
+    pill.textContent = cfg.ai_available ? "AI: live"
+      : cfg.ai_locked ? "AI: locked (offline features still work)"
+      : "AI: offline (presets + summaries still work)";
+    pill.classList.toggle("on", cfg.ai_available);
+    const btn = $("btn-lock");
+    btn.hidden = !cfg.ai_lock_enabled;
+    btn.textContent = cfg.ai_locked ? "🔒 Unlock AI" : "🔓 Lock AI";
+  }
+
+  async function refreshConfig() {
+    try { S.config = await api("/api/config"); renderAiStatus(); } catch (_) { /* keep old */ }
+  }
+
+  async function onLockButton() {
+    if (!S.config.ai_locked) {  // currently unlocked -> lock this browser again
+      try { await api("/api/lock", {}); } catch (_) { /* ignore */ }
+      await refreshConfig();
+      return;
+    }
+    showError("unlock-error", "");
+    $("unlock-password").value = "";
+    $("unlock-dialog").showModal();
+    $("unlock-password").focus();
+  }
+
+  async function submitUnlock(ev) {
+    ev.preventDefault();
+    showError("unlock-error", "");
+    busy($("btn-unlock"), true);
+    try {
+      await api("/api/unlock", { password: $("unlock-password").value });
+      $("unlock-password").value = "";
+      $("unlock-dialog").close();
+      await refreshConfig();
+    } catch (e) {
+      showError("unlock-error", e.message);
+    } finally {
+      busy($("btn-unlock"), false);
+    }
+  }
+
   // ------------------------------------------------------------ save on this device + share links
   const STORE_KEY = "tradeshock.farm.v1";
 
@@ -1168,9 +1213,7 @@
     for (const [zone, crops] of Object.entries(cfg.zones)) S.allowed[zone] = new Set(crops.map((c) => c.crop));
     if (!cfg.zones[S.zone]) S.zone = Object.keys(cfg.zones)[0];
 
-    const pill = $("ai-pill");
-    pill.textContent = cfg.ai_available ? "AI: live" : "AI: offline (presets + summaries still work)";
-    pill.classList.toggle("on", cfg.ai_available);
+    renderAiStatus();
 
     if (!cfg.data_verified) {
       $("data-banner").hidden = false;
@@ -1241,6 +1284,9 @@
     });
     $("sweep-crop").addEventListener("change", (ev) => { S.sweepCrop = ev.target.value; runSweep(); });
     $("btn-share").addEventListener("click", copyShareLink);
+    $("btn-lock").addEventListener("click", onLockButton);
+    $("unlock-form").addEventListener("submit", submitUnlock);
+    $("btn-unlock-cancel").addEventListener("click", () => $("unlock-dialog").close());
 
     // A shared link wins; otherwise restore the farm saved on this device.
     const shared = applySharedLink();

@@ -86,7 +86,13 @@ Saskatchewan farm income is exposed to sudden trade shocks, such as tariffs on c
 - Each AI call logs the prompt version, model, latency and token use.
 - The model is set by `ANTHROPIC_MODEL` (default `claude-opus-5-5`). All provider code is in `ai.py`, and the agent loop is in `agent.py`.
 - Server-side refusal fallbacks are on by default (`ANTHROPIC_USE_FALLBACKS=0` turns them off).
-- AI endpoints are rate-limited per IP (`AI_RATE_LIMIT_PER_MIN`, default 10).
+- AI endpoints are rate-limited per IP (`AI_RATE_LIMIT_PER_MIN`, default 10). The client IP comes from the proxy's own hop, so faked `X-Forwarded-For` headers can't dodge it. There's also a daily cap (`AI_DAILY_CALL_LIMIT`).
+- **Admin lock:** if `AI_ACCESS_PASSWORD` is set (12+ characters), live AI only runs for browsers unlocked with that password. Everyone else gets the full offline app.
+  - Constant-time password check.
+  - 5 attempts per 15 minutes per IP.
+  - Signed 12-hour HttpOnly / Secure / SameSite=Strict cookie.
+  - Fails closed if the password is weak.
+  - Changing the password revokes every session.
 
 ## Run locally
 

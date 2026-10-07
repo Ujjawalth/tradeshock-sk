@@ -6,6 +6,7 @@ Every call logs prompt version, model, latency and token use to the console.
 """
 from __future__ import annotations
 
+import contextvars
 import json
 import logging
 import os
@@ -33,8 +34,13 @@ _client = None
 _fallbacks_ok = True  # flipped off if the chosen model rejects server-side fallbacks
 
 
+# Per-request switch set by the web app (admin lock). Scripts/CLI default to allowed.
+request_ai_allowed: contextvars.ContextVar[bool] = contextvars.ContextVar("request_ai_allowed", default=True)
+
+
 def available() -> bool:
-    return bool(os.getenv("ANTHROPIC_API_KEY"))
+    """True if live AI may be used for this request (key configured and not locked)."""
+    return bool(os.getenv("ANTHROPIC_API_KEY")) and request_ai_allowed.get()
 
 
 def _model() -> str:
@@ -43,8 +49,10 @@ def _model() -> str:
 
 def _get_client() -> anthropic.Anthropic:
     global _client
-    if not available():
+    if not os.getenv("ANTHROPIC_API_KEY"):
         raise AIUnavailable("ANTHROPIC_API_KEY is not set")
+    if not request_ai_allowed.get():
+        raise AIUnavailable("live AI is locked (admin password required)")
     if _client is None:
         # Short timeout keeps the end-to-end demo under 30 s; 1 retry for blips.
         _client = anthropic.Anthropic(timeout=25.0, max_retries=1)
