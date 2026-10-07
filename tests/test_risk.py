@@ -37,10 +37,13 @@ def test_risk_aversion_trades_average_for_bad_year():
     assert safe["bad_year"] >= mx["bad_year"] - 1e-6
     assert safe["expected"] <= mx["expected"] + 1e-6
     assert sum(out["risk_aware_plan"]["acres"].values()) == 2000
-    # frontier is monotone: more aversion -> lower average, better bad year
+    # frontier: more aversion -> lower average, better bad year. The CVaR LP is solved on an
+    # evenly spaced scenario subset but scored on all scenarios, so allow 1% sampling error.
     f = out["frontier"]
     assert all(a["expected"] >= b["expected"] - 1e-6 for a, b in zip(f, f[1:]))
-    assert all(a["bad_year"] <= b["bad_year"] + 1e-6 for a, b in zip(f, f[1:]))
+    tol = 0.005 * f[0]["expected"]  # bad-year values can be near 0, so scale by the farm's return
+    assert all(a["bad_year"] <= b["bad_year"] + tol for a, b in zip(f, f[1:]))
+    assert f[-1]["bad_year"] >= f[0]["bad_year"]
     assert sum(out["histogram"]["max_return_plan"]) == out["n_scenarios"]
 
 

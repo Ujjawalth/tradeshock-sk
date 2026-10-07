@@ -72,7 +72,11 @@ def create_message(prompt_version: str, **kwargs):
         else:
             resp = client.messages.create(**kwargs)
     except anthropic.BadRequestError as exc:
-        if use_fallbacks:  # model may not support fallbacks: retry plain once
+        msg = str(exc).lower()
+        if "credit balance" in msg or "billing" in msg:
+            raise AIUnavailable("AI account has no credit (add credits in the Anthropic console)") from exc
+        if use_fallbacks and ("fallback" in msg or "beta" in msg):
+            # this model doesn't support server-side fallbacks: retry plain once
             log.warning("fallbacks rejected (%s); retrying without", exc.status_code)
             _fallbacks_ok = False
             return create_message(prompt_version, **kwargs)

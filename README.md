@@ -67,7 +67,7 @@ Saskatchewan farm income is exposed to sudden trade shocks, such as tariffs on c
 
 | Data | Source | Status |
 |---|---|---|
-| Crop budgets (yield, price, variable and total cost per acre, by soil zone) | Saskatchewan Ministry of Agriculture **2026 Crop Planning Guide** (PDF downloaded manually into `data/raw/`). `scripts/extract_guide.py` gives every row a `source_page`. | **Currently UNVERIFIED placeholders.** Every row is `verified:false` and the app shows a banner until the guide is extracted. |
+| Crop budgets (yield, price, variable and total cost per acre, by soil zone) | Saskatchewan Ministry of Agriculture **Crop Planning Guide 2026** (official PDF downloaded manually into `data/raw/`). `scripts/extract_guide.py` gives every row a `source_page`. | **Verified:** 23 rows (8 crops × 3 zones; the guide has no Durum budget for the Black zone). Every row passed the guide's own arithmetic (yield × price = gross revenue; gross − variable = return over variable expenses). |
 | Price risk | **Statistics Canada Table 32-10-0077-01**, *Farm product prices, crops and livestock*, Saskatchewan, monthly. Open Government Licence – Canada. Fitted by `scripts/fit_price_model.py` into `data/price_model.json`. | Real data: 140 joint 12-month windows, 2013-08 → 2026-07. Pulses use class-level series (all dry peas, all lentils). |
 | Yield risk | **Statistics Canada Table 32-10-0359-01**, *Estimated areas, yield, production…of principal field crops*, Saskatchewan, annual. Open Government Licence – Canada. Fitted by `scripts/fit_yield_model.py` into `data/yield_model.json`. | Real data: 35 years, 1991–2025. Linear trend removed per crop. Provincial averages (they understate single-farm swings). |
 | Trade Watch feeds | Government of Canada news API (Atom): Agriculture and Agri-Food Canada, Department of Finance Canada | Live, official only. Links restricted to canada.ca. |
@@ -147,6 +147,7 @@ tests/              pytest: optimizer, risk, agent, watch, validation, API
 
 - The risk lens treats price and yield swings as **independent**. That's conservative, since bad harvests often lift prices.
 - Yield swings are provincial averages, which understate a single farm's risk. Crop insurance and AgriStability aren't modelled.
+- For speed, the risk-aware LP is solved on an evenly spaced 1,200-scenario subset of the 4,900 combinations. All results shown are scored on the full set.
 - Historical price windows overlap, so the scenarios aren't independent. Pulse prices and yields are class-level series.
 - The optimizer maximizes return over variable costs. Fixed costs are reported but don't change the mix.
 - Rotation limits are simple percentage caps, not a multi-year rotation model.
