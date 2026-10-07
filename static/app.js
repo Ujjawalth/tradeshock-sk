@@ -1066,6 +1066,33 @@
     buildBaseline().then((ok) => ok && runShock({ explain: true, sweep: true }));
   }
 
+  // ------------------------------------------------------------ theme (dark-first, light for bright projectors)
+  const THEME_KEY = "tradeshock.theme";
+
+  function applyTheme(theme) {
+    const light = theme === "light";
+    if (light) document.documentElement.setAttribute("data-theme", "light");
+    else document.documentElement.removeAttribute("data-theme");
+    const btn = $("btn-theme");
+    if (btn) {
+      btn.textContent = light ? "☾" : "☀";
+      const label = light ? "Switch to dark theme" : "Switch to light theme";
+      btn.setAttribute("aria-label", label);
+      btn.title = label;
+    }
+  }
+
+  function toggleTheme() {
+    const next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (_) { /* storage blocked */ }
+    // Charts read colours when created: rebuild them in the new palette.
+    for (const k of Object.keys(S.charts)) { S.charts[k].destroy(); delete S.charts[k]; }
+    if (S.lastCmp) { drawAcresChart(S.lastCmp); runSweep(); runRisk(); }
+  }
+
+  try { applyTheme(localStorage.getItem(THEME_KEY) || "dark"); } catch (_) { applyTheme("dark"); }
+
   // ------------------------------------------------------------ admin AI lock
   function renderAiStatus() {
     const cfg = S.config;
@@ -1342,6 +1369,7 @@
     $("sweep-crop").addEventListener("change", (ev) => { S.sweepCrop = ev.target.value; runSweep(); });
     $("btn-share").addEventListener("click", copyShareLink);
     $("btn-lock").addEventListener("click", onLockButton);
+    $("btn-theme").addEventListener("click", toggleTheme);
     $("unlock-form").addEventListener("submit", submitUnlock);
     $("btn-unlock-cancel").addEventListener("click", () => $("unlock-dialog").close());
 
