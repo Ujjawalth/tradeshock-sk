@@ -19,9 +19,10 @@ Build window: Mon Oct 5, 2026 6:00 pm → Thu Oct 8, 2026 6:00 pm.
 | Tue Oct 6, ~10:12–10:14 pm | **Demo tour** (▶ button): 8-step captioned walkthrough (Trade Watch → scenario → shock plan → bear/base/bull → risk → agent → summary), all on offline-safe paths; Esc/Stop to exit. 81 tests passing. | Claude Code |
 | Tue Oct 6, ~10:15–11:00 pm | "Latest request wins" guard on all async renderers (fixes stale results when sliders move fast). **Yield risk**: `scripts/fit_yield_model.py` + `data/yield_model.json` from **Statistics Canada Table 32-10-0359** (Saskatchewan, 1991–2025, detrended, joint across crops); risk lens now replays 140 price moves × 35 yield years = 4,900 scenarios (toggleable; independence assumption labelled). Saved farm profile (localStorage) + **share links** (farm + scenario in URL hash, re-validated server-side; tested with injected HTML). Assumed bear/bull ranges now synced from the server. Dark-mode check. 82 tests passing. | Claude Code |
 | Wed Oct 7, ~2:00–2:30 pm | User downloaded the official Crop Planning Guide 2026 PDF, created `.env`, installed Git. Repo initialised and first commit made (`.env`, `venv/`, `data/raw/` confirmed excluded). Rewrote `extract_guide.py` for the guide's one-page-per-crop layout (text-line parsing, leading-number guard, arithmetic self-checks); **23 VERIFIED rows** replace the placeholders. Risk test tolerance adjusted for real data. Fixed: any HTTP 400 was misread as "fallbacks unsupported" (found on first live call: account had no API credit). 82 tests passing. | Claude Code |
+| Wed Oct 7, ~2:45–3:10 pm | Pushed to GitHub (github.com/Ujjawalth/tradeshock-sk). **Deployed on Render** via Blueprint: https://tradeshock-sk.onrender.com. Live smoke test of every endpoint passed (plan, preset, shock, cases, risk 4,900 scenarios, sweep, explain, agent, Trade Watch sample, lease); AI routes degrade cleanly while the API account has no credit. Phone-width check on the live URL. Workspace set to the project's own venv. | Claude Code |
 
 ## Open items
 - [x] Official Crop Planning Guide 2026 extracted (23 rows, verified) — **user to spot-check 3 rows against the PDF.**
 - [ ] Add API credit in the Anthropic console, then run `scripts/build_demo_cache.py`.
-- [ ] Push to GitHub (`git push -u origin main`, needs browser login once).
-- [ ] Deploy to Render, test on phone.
+- [x] Push to GitHub.
+- [x] Deploy to Render, test on phone (live URL works on phone width).
