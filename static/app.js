@@ -1070,11 +1070,13 @@
   function renderAiStatus() {
     const cfg = S.config;
     const pill = $("ai-pill");
-    pill.textContent = {
-      live: "AI: live",
-      locked: "AI: locked (offline features still work)",
-      no_credit: "AI: paused, no API credit (offline features still work)",
-    }[cfg.ai_status] || "AI: offline (presets + summaries still work)";
+    const status = {
+      live: ["AI live", "Live AI is on."],
+      locked: ["AI locked", "Live AI needs the admin password. Presets, plans, risk and summaries still work offline."],
+      no_credit: ["AI paused", "The API account has no credit. Everything else still works offline."],
+    }[cfg.ai_status] || ["AI offline", "Presets, plans, risk and summaries still work offline."];
+    pill.textContent = status[0];
+    pill.title = status[1];
     pill.classList.toggle("on", cfg.ai_available);
     const btn = $("btn-lock");
     btn.hidden = !cfg.ai_lock_enabled;

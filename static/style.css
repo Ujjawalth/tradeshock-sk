@@ -148,6 +148,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--border-focu
 .pill-btn::before { display: none; }
 .pill-btn:hover { border-color: var(--accent-gold); color: var(--ink-primary); }
 .tour-btn { padding: 7px 14px; font-size: var(--text-sm); }
+@media (min-width: 900px) { .header-inner { flex-wrap: nowrap; } .pills { flex-wrap: nowrap; } }
 
 .banner.warn { background: var(--warn-bg); color: var(--warn-ink); font-size: var(--text-sm); padding: 10px 0;
   border-left: 5px solid var(--accent-canola); }
