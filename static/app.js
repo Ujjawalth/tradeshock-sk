@@ -50,6 +50,23 @@
   const fmtPrice = (v, unit) => (unit === "lb" ? "$" + v.toFixed(3) : fmtMoney2(v)) + "/" + unit;
   const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
+  // Animate a money figure from its previous value to the new one (instant with reduced motion).
+  function countUp(node, to, fmt, ms = 650) {
+    const from = Number(node.dataset.value || 0);
+    node.dataset.value = String(Math.round(to));
+    const motionOk = !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    if (!motionOk || from === Math.round(to)) { node.textContent = fmt(to); return; }
+    const t0 = performance.now();
+    const step = (now) => {
+      if (node.dataset.value !== String(Math.round(to))) return;  // a newer update took over
+      const p = Math.min(1, (now - t0) / ms);
+      const eased = 1 - Math.pow(1 - p, 3);
+      node.textContent = fmt(from + (to - from) * eased);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
   function debounce(fn, ms) {
     let t;
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
@@ -377,15 +394,28 @@
     S.lastCmp = cmp;
     $("step-results").hidden = false;
     const s = cmp.summary;
-    $("k-baseline").textContent = fmtMoney(s.baseline_return);
-    $("k-stand").textContent = fmtMoney(s.stand_still_return);
-    $("k-shock").textContent = fmtMoney(s.shock_return);
+    countUp($("k-baseline"), s.baseline_return, fmtMoney);
+    countUp($("k-stand"), s.stand_still_return, fmtMoney);
+    countUp($("k-shock"), s.shock_return, fmtMoney);
     const sub = $("k-shock-sub");
     sub.replaceChildren(el("span", {
       class: s.change_vs_baseline < 0 ? "delta-neg" : s.change_vs_baseline > 0 ? "delta-pos" : "",
       text: `${fmtSigned(s.change_vs_baseline)}${s.change_vs_baseline_pct !== null ? ` (${fmtPct(s.change_vs_baseline_pct)})` : ""} vs baseline`,
     }));
-    $("k-value").textContent = s.mix_changed ? fmtSigned(s.value_of_replanning) : "$0 · mix holds";
+    const kv = $("k-value");
+    if (s.mix_changed) {
+      const changed = kv.dataset.value !== String(Math.round(s.value_of_replanning));
+      countUp(kv, s.value_of_replanning, fmtSigned);
+      if (changed) {  // one soft glow when the money number changes
+        const tile = kv.closest(".tile");
+        tile.classList.remove("flash");
+        void tile.offsetWidth;  // restart the CSS animation
+        tile.classList.add("flash");
+      }
+    } else {
+      kv.dataset.value = "0";
+      kv.textContent = "$0 · mix holds";
+    }
 
     const shockByCrop = Object.fromEntries(cmp.shock.crops.map((r) => [r.crop, r]));
     const allCrops = Object.fromEntries([...cmp.baseline.crops, ...cmp.shock.crops].map((r) => [r.crop, r]));
@@ -468,6 +498,9 @@
   async function runExplain() {
     $("step-explain").hidden = false;
     $("explain-loading").hidden = false;
+    if (!$("explanation").textContent.trim()) {  // first load: skeleton lines instead of a blank box
+      $("explanation").replaceChildren(...[1, 2, 3, 4].map(() => el("div", { class: "skeleton", "aria-hidden": "true" })));
+    }
     $("btn-explain").hidden = true;
     const key = JSON.stringify([getProfile(), scenarioPayload()]);
     const t = ticket("explain");
@@ -847,6 +880,11 @@
       el("td", { class: "num", text: p.max_regret < 1 ? "$0" : fmtMoney(p.max_regret) }),
     )));
     const worstOther = Math.max(...cs.plans.filter((p) => p !== pick).map((p) => p.max_regret), 0);
+    if (cs.plans.length === 1) {
+      $("cases-verdict").replaceChildren(el("strong", { text: "★ One plan wins all three cases: " }),
+        "being wrong about these prices doesn't change what to plant.");
+      return;
+    }
     $("cases-verdict").replaceChildren(
       el("strong", { text: "★ " + pick.labels.map((l) => PLAN_LABEL[l] || l).join(" = ") + ": " }),
       `whichever case happens, this plan is never more than ${fmtMoney(pick.max_regret)} behind the best plan for that case` +

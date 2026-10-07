@@ -6,14 +6,29 @@
   <title>TradeShock SK</title>
   <meta name="description" content="Stress-test a Saskatchewan grain farm's crop plan against a trade headline.">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23a8641a'/><path d='M8 22 L14 14 L18 18 L24 9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23FBF0E2'/><circle cx='17' cy='20' r='7' fill='%23FAB005'/><path d='M0 21 Q8 18 16 21 T32 21 V32 H0 Z' fill='%23D9822B'/><path d='M3 12 H9 L12 6.5 L16 15 L19 9.5 L21 12 H29' fill='none' stroke='%231C7ED6' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap header-inner">
-      <div>
-        <h1 class="brand">TradeShock <span>SK</span></h1>
-        <p class="tagline">See what a trade headline does to your crop plan before you buy seed.</p>
+      <div class="brand-row">
+        <svg class="logo" viewBox="0 0 32 32" width="32" height="32" role="img" aria-labelledby="logo-title">
+          <title id="logo-title">TradeShock SK logo: a prairie sunrise over wheat, crossed by a data line</title>
+          <defs><clipPath id="logo-clip"><rect width="32" height="32" rx="8"/></clipPath></defs>
+          <g clip-path="url(#logo-clip)">
+            <rect class="logo-sky" width="32" height="32"/>
+            <circle class="logo-sun" cx="17" cy="20" r="7"/>
+            <path class="logo-field" d="M0 21 Q8 18 16 21 T32 21 V32 H0 Z"/>
+            <path class="logo-wheat" d="M8 30 V22 M8 24 l-2.2 -2.2 M8 26 l2.2 -2.2 M24 30 V23 M24 25 l-2 -2 M24 27 l2 -2"
+                  fill="none" stroke-width="1.6" stroke-linecap="round"/>
+            <path class="logo-wave" d="M3 12 H9 L12 6.5 L16 15 L19 9.5 L21 12 H29"
+                  fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </svg>
+        <div>
+          <h1 class="brand">TradeShock <span>SK</span></h1>
+          <p class="tagline">See what a trade headline does to your crop plan before you buy seed.</p>
+        </div>
       </div>
       <div class="pills">
         <button id="btn-tour" class="btn primary tour-btn" type="button">▶ Demo tour</button>
@@ -21,6 +36,11 @@
         <button id="btn-lock" class="pill pill-btn" type="button" hidden></button>
       </div>
     </div>
+    <!-- decorative prairie horizon -->
+    <svg class="horizon" viewBox="0 0 1200 26" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path class="h-far" d="M0 14 C150 6 300 18 450 11 S750 4 900 12 S1100 18 1200 9 V26 H0 Z"/>
+      <path class="h-near" d="M0 20 C200 13 350 24 600 17 S950 12 1200 19 V26 H0 Z"/>
+    </svg>
   </header>
 
   <div id="data-banner" class="banner warn" hidden>
