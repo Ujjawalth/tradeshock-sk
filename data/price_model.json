@@ -6,7 +6,7 @@
   "horizon_months": 12,
   "window": "2013-08 to 2026-07",
   "n_windows": 140,
-  "note": "Overlapping windows: scenarios are not independent. Price risk only (no yield risk).",
+  "note": "Overlapping windows: scenarios are not independent.",
   "series": {
    "Canola": "Canola (including rapeseed) [113111]",
    "CWRS Wheat": "Wheat (except durum wheat) [1121111]",

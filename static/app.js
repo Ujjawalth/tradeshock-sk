@@ -212,6 +212,7 @@
       else hideResults();
     } catch (e) {
       showError("headline-error", e.message);
+      refreshConfig();  // AI may have just gone offline (no credit / locked)
     } finally {
       $("headline-loading").hidden = true;
       busy($("btn-analyze"), false);
@@ -274,9 +275,20 @@
         "aria-label": `${a.crop} price change percent`,
       });
       const rangeText = el("span", { class: "range" });
-      const setRange = () => {
-        a.low_pct = Math.min(a.low_pct ?? a.price_change_pct, a.price_change_pct);
-        a.high_pct = Math.max(a.high_pct ?? a.price_change_pct, a.price_change_pct);
+      const clampPct = (v) => Math.max(-60, Math.min(60, v));
+      // The bear/bull range moves with the slider, keeping the AI's original spread around its estimate.
+      const setRange = (moved = false) => {
+        const base = a.price_change_pct;
+        if (a._dl === undefined && a.low_pct != null && a.high_pct != null) {
+          a._dl = base - a.low_pct;
+          a._dh = a.high_pct - base;
+        }
+        if (moved && !a.range_assumed && a._dl !== undefined) {
+          a.low_pct = clampPct(base - a._dl);
+          a.high_pct = clampPct(base + a._dh);
+        }
+        a.low_pct = Math.min(a.low_pct ?? base, base);
+        a.high_pct = Math.max(a.high_pct ?? base, base);
         rangeText.textContent = `bear ${fmtPct(a.low_pct)} · bull ${fmtPct(a.high_pct)}${a.range_assumed ? " (assumed)" : ""}`;
       };
       setRange();
@@ -284,7 +296,7 @@
       range.addEventListener("input", () => {
         a.price_change_pct = Number(range.value);
         setPct(a.price_change_pct);
-        setRange();
+        setRange(true);
         a.edited = true;
         onScenarioEdit();
       });
@@ -767,7 +779,9 @@
           el("div", { class: "alert-title" }, title),
           el("div", { class: "alert-meta", text: `${a.source} · ${a.published || ""}` }),
           el("div", { class: "alert-row" },
-            imp ? el("span", { class: `impact ${cls}`, text: `${fmtSigned(imp.change_vs_baseline)} to your plan` }) : null,
+            imp ? el("span", { class: `impact ${cls}`, text: Math.abs(imp.change_vs_baseline) < 1
+              ? "No effect on your current plan (you don't grow these crops)"
+              : `${fmtSigned(imp.change_vs_baseline)} to your plan` }) : null,
             imp && imp.mix_changed ? el("span", { class: "hint", text: `re-planning worth ${fmtSigned(imp.value_of_replanning)}` }) : null,
             ...a.scenario.affected.map((c) => el("span", { class: "crop-chip", text: `${c.crop} ${fmtPct(c.price_change_pct)}` })),
             el("button", { type: "button", class: "btn ghost", text: "Stress-test this →", onclick: () => loadWatchItem(a) }),
@@ -978,6 +992,7 @@
       }
       addMsg("bot", data.answer, meta);
       S.chat.push({ role: "user", text: question }, { role: "assistant", text: data.answer });
+      if (data.source !== "ai" && S.config.ai_status === "live") refreshConfig();
     } catch (e) {
       thinking.remove();
       addMsg("bot", "Sorry: " + e.message);
@@ -1017,9 +1032,11 @@
   function renderAiStatus() {
     const cfg = S.config;
     const pill = $("ai-pill");
-    pill.textContent = cfg.ai_available ? "AI: live"
-      : cfg.ai_locked ? "AI: locked (offline features still work)"
-      : "AI: offline (presets + summaries still work)";
+    pill.textContent = {
+      live: "AI: live",
+      locked: "AI: locked (offline features still work)",
+      no_credit: "AI: paused, no API credit (offline features still work)",
+    }[cfg.ai_status] || "AI: offline (presets + summaries still work)";
     pill.classList.toggle("on", cfg.ai_available);
     const btn = $("btn-lock");
     btn.hidden = !cfg.ai_lock_enabled;

@@ -38,9 +38,26 @@ _fallbacks_ok = True  # flipped off if the chosen model rejects server-side fall
 request_ai_allowed: contextvars.ContextVar[bool] = contextvars.ContextVar("request_ai_allowed", default=True)
 
 
+NO_CREDIT_PAUSE_S = 300
+_no_credit_until = 0.0  # after a billing error, skip live AI for a while (no pointless failing calls)
+
+
+def no_credit() -> bool:
+    return time.time() < _no_credit_until
+
+
+def status() -> str:
+    """For the UI: live | locked | no_credit | no_key."""
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        return "no_key"
+    if not request_ai_allowed.get():
+        return "locked"
+    return "no_credit" if no_credit() else "live"
+
+
 def available() -> bool:
-    """True if live AI may be used for this request (key configured and not locked)."""
-    return bool(os.getenv("ANTHROPIC_API_KEY")) and request_ai_allowed.get()
+    """True if live AI may be used for this request (key set, unlocked, credit not known to be empty)."""
+    return status() == "live"
 
 
 def _model() -> str:
@@ -82,7 +99,7 @@ def create_message(prompt_version: str, **kwargs):
     Adds model + effort, optional refusal fallbacks, maps SDK errors to
     AIUnavailable, and logs prompt version, latency and token use.
     """
-    global _fallbacks_ok
+    global _fallbacks_ok, _no_credit_until
     client = _get_client()
     _spend_budget()
     kwargs.setdefault("model", _model())
@@ -101,6 +118,7 @@ def create_message(prompt_version: str, **kwargs):
     except anthropic.BadRequestError as exc:
         msg = str(exc).lower()
         if "credit balance" in msg or "billing" in msg:
+            _no_credit_until = time.time() + NO_CREDIT_PAUSE_S
             raise AIUnavailable("AI account has no credit (add credits in the Anthropic console)") from exc
         if use_fallbacks and ("fallback" in msg or "beta" in msg):
             # this model doesn't support server-side fallbacks: retry plain once

@@ -461,6 +461,14 @@ def offline_answer(state: AgentState, question: str) -> str:
         res, err = run_tool(state, "bear_base_bull", {})
         if err:
             return f"I can't compare cases yet: {res['error']}"
+        if len(res["plans"]) == 1:  # one mix wins every case: say so plainly
+            p = res["plans"][0]
+            r = p["return_by_case"]
+            mix = "; ".join(f"{c} {a:,.0f} ac" for c, a in p["acres"].items())
+            return (f"**Bear / base / bull check:** the same mix ({mix}) is the best plan in all three cases "
+                    f"(bear {r.get('bear', '-')}, base {r.get('base', '-')}, bull {r.get('bull', '-')}), "
+                    "so being wrong about these prices doesn't change what to plant.\n"
+                    "Prices are planning assumptions, not forecasts.")
         rows = []
         for p in res["plans"]:
             r = p["return_by_case"]
@@ -480,13 +488,20 @@ def offline_answer(state: AgentState, question: str) -> str:
                     f"A risk-aware mix ({mix}) gives up {res['risk_aware_gives_up_on_average']} on average "
                     f"and protects {res['risk_aware_protects_in_bad_year']} in a bad year.\n"
                     f"Worst replay: {a['worst_replay']} ({a['worst_historical_replay']}).")
-    if parsed["what_if"] or not parsed["sweep"]:
+    if not parsed["what_if"] and not parsed["sweep"]:
+        # Nothing to compute: explain what offline mode understands instead of re-printing the plan.
+        mentions = [c for _, c in _crop_mentions(question.lower(), state.crops)]
+        hint = (f"Did you mean a price change for {mentions[0]}? Try \"{mentions[0].lower()} +10%\" "
+                f"or \"{mentions[0].lower()} -15%\".\n" if mentions else "")
+        return (hint + "In offline mode I understand questions like:\n"
+                "- \"canola -20%\" or \"peas drop 15% and oats up 10%\" (price changes)\n"
+                "- \"cap canola at 25%\" or \"cereals at least 30%\" (rotation limits)\n"
+                "- \"add 500 acres\" or \"no lentils\" (farm size, crops)\n"
+                "- \"where does canola tip?\", \"how risky is my plan?\", \"what if I'm wrong?\"")
+    if parsed["what_if"]:
         res, err = run_tool(state, "what_if", parsed["what_if"])
         if err:
             return f"I couldn't build that plan: {res['error']}"
-        if not parsed["what_if"]:
-            lines.append("I couldn't spot a specific change in that question (offline mode understands things "
-                         "like \"canola -20%\", \"cap canola at 25%\" or \"add 500 acres\"). Here is the current plan:")
         mix = "; ".join(f"{m['crop']} {m['acres']:,.0f} ac" for m in res["what_if_mix"])
         lines.append(f"**What-if plan:** {mix}.")
         lines.append(f"Return over variable costs: {res['what_if_return']} vs {res['current_plan_return']} "
@@ -523,16 +538,22 @@ def answer(question: str, profile: FarmProfile, price_changes: dict[str, float],
     state = AgentState(profile=profile, price_changes=dict(price_changes), crops=crops, cases=cases)
     source = "offline"
     text = None
+    reason = {"locked": "live AI is locked (admin password needed)",
+              "no_credit": "live AI is paused (the API account has no credit)",
+              "no_key": "live AI isn't configured"}.get(ai.status())
     if ai.available():
         try:
             text = ask_claude(state, question, history or [])
             source = "ai"
         except ai.AIUnavailable as exc:
             log.warning("agent fell back to offline parser: %s", exc)
+            reason = f"live AI is unavailable right now ({exc})"
             state.tool_log.clear()
             state.tool_results.clear()
             state.proposal = None
     if text is None:
         text = offline_answer(state, question)
+        if reason:
+            text = f"(Offline mode: {reason}.)\n" + text
     return {"answer": text, "source": source, "proposal": state.proposal,
             "steps": [{"tool": t["tool"], "error": t["error"]} for t in state.tool_log]}

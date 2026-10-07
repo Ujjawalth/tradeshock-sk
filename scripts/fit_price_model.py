@@ -113,7 +113,7 @@ def main() -> None:
             "horizon_months": HORIZON,
             "window": f"{starts[0]} to {month_add(starts[-1], HORIZON)}",
             "n_windows": len(starts),
-            "note": "Overlapping windows: scenarios are not independent. Price risk only (no yield risk).",
+            "note": "Overlapping windows: scenarios are not independent.",
             "series": SERIES,
             "series_notes": SERIES_NOTES,
             "fitted_at": datetime.now(timezone(timedelta(hours=-6))).strftime("%Y-%m-%d %H:%M SK"),

@@ -84,6 +84,14 @@ def test_headline_is_wrapped_as_data(monkeypatch):
     assert seen["schema"]["properties"]["affected"]["items"]["properties"]["crop"]["enum"] == CROPS
 
 
+def test_no_credit_pauses_ai(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setattr(ai, "_no_credit_until", 0.0)
+    assert ai.status() == "live"
+    monkeypatch.setattr(ai, "_no_credit_until", ai.time.time() + 60)
+    assert ai.status() == "no_credit" and not ai.available()
+
+
 def test_invalid_model_output_raises_unavailable(monkeypatch):
     monkeypatch.setattr(ai, "_call", lambda *a, **k: "sorry, no JSON here")
     with pytest.raises(ai.AIUnavailable):

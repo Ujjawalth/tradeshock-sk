@@ -83,6 +83,26 @@ def test_bear_base_bull_tool_and_offline():
     assert "can't compare" in out["answer"]
 
 
+def test_unclear_question_gets_help_not_a_plan():
+    out = agent.answer("are you live", PROFILE, {}, CROPS)
+    assert "offline mode I understand" in out["answer"]
+    assert out["proposal"] is None and out["steps"] == []
+    out = agent.answer("plan for barley", PROFILE, {}, CROPS)
+    assert "price change for Barley" in out["answer"]
+
+
+def test_offline_answer_says_why(monkeypatch):
+    monkeypatch.setattr(ai, "status", lambda: "no_credit")
+    out = agent.answer("canola -20%", PROFILE, {}, CROPS)
+    assert out["answer"].startswith("(Offline mode: live AI is paused")
+
+
+def test_single_plan_cases_wording():
+    same = {"bear": {"Oats": -10}, "base": {"Oats": -5}, "bull": {"Oats": 0}}  # oats not in plan
+    out = agent.answer("what if I'm wrong?", PROFILE, {"Oats": -5}, CROPS, cases=same)
+    assert "best plan in all three cases" in out["answer"]
+
+
 def test_empty_question_rejected():
     with pytest.raises(ValueError):
         agent.answer("   ", PROFILE, {}, CROPS)

@@ -200,6 +200,7 @@ def config():
         data_source=meta.get("source", ""),
         data_verified=all(r.verified for r in rows),
         ai_available=ai.available(),
+        ai_status=ai.status(),
         ai_configured=bool(os.getenv("ANTHROPIC_API_KEY")),
         ai_locked=access.lock_enabled() and not ai.request_ai_allowed.get(),
         ai_lock_enabled=access.lock_enabled(),
