@@ -19,3 +19,6 @@ data/raw/
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Rendered demo video (upload separately; scripts/video/ rebuilds it)
+submission/

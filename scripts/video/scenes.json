@@ -1,0 +1,57 @@
+[
+  {
+    "id": "01_intro",
+    "text": "Meet TradeShock S K. Saskatchewan grain farms plan next year's crops in winter, but a single trade headline, like new duties on canola, can wreck that plan. TradeShock stress-tests your crop plan against the headline, before you buy seed.",
+    "action": "window.scrollTo({top: 0, behavior: 'smooth'})"
+  },
+  {
+    "id": "02_farm",
+    "text": "Start with your farm: soil zone, acres, the crops you grow, and simple rotation limits. A linear-programming optimizer builds the most profitable crop mix, using the Saskatchewan Ministry of Agriculture's 2026 Crop Planning Guide, checked line by line.",
+    "action": "document.getElementById('step-profile').scrollIntoView({behavior: 'smooth', block: 'start'})"
+  },
+  {
+    "id": "03_watch",
+    "text": "Trade Watch automates the scanning. It reads official Government of Canada news, flags the trade items, and stress-tests each one against your farm, ranked by dollar impact. This is a hypothetical demo feed.",
+    "action": "document.getElementById('btn-watch-sample').click(); setTimeout(() => document.getElementById('step-watch').scrollIntoView({behavior: 'smooth', block: 'start'}), 700)"
+  },
+  {
+    "id": "04_headline",
+    "text": "One click turns a headline into a scenario: which crops are hit, by how much, how confident, and a bear-to-bull range. Every estimate is a slider, so the farmer always has the final say.",
+    "action": "document.querySelector('.preset[data-id=\"canola-duties\"]').click(); setTimeout(() => document.getElementById('scenario-out').scrollIntoView({behavior: 'smooth', block: 'start'}), 900)"
+  },
+  {
+    "id": "05_shock",
+    "text": "The optimizer re-plans instantly. Keeping the old plan would drop returns to about three hundred and five thousand dollars. Re-planning lifts it back to three hundred and fifty-eight thousand. That's fifty-three thousand dollars left on the table if you don't adjust.",
+    "action": "document.getElementById('step-results').scrollIntoView({behavior: 'smooth', block: 'start'})"
+  },
+  {
+    "id": "06_slider",
+    "text": "Not sure about the estimate? Drag a slider, and the whole plan updates in real time.",
+    "action": "(() => { const r = document.querySelector('#sliders input[type=range]'); r.scrollIntoView({behavior: 'smooth', block: 'center'}); let v = Number(r.value); const t = setInterval(() => { v -= 1; r.value = v; r.dispatchEvent(new Event('input', {bubbles: true})); if (v <= -30) { clearInterval(t); setTimeout(() => document.getElementById('step-results').scrollIntoView({behavior: 'smooth', block: 'start'}), 600); } }, 90); })()"
+  },
+  {
+    "id": "07_cases",
+    "text": "Bear, base, and bull cases show which plan holds up whichever way prices go, and how much you would regret each choice.",
+    "action": "document.getElementById('cases-box').scrollIntoView({behavior: 'smooth', block: 'center'})"
+  },
+  {
+    "id": "08_risk",
+    "text": "The risk lens replays one hundred and forty real price moves and thirty-five real harvest years from Statistics Canada, including the 2021 drought. It shows how bad a bad year can get, and a crop mix that cushions it.",
+    "action": "document.getElementById('step-risk').scrollIntoView({behavior: 'smooth', block: 'start'}); setTimeout(() => document.getElementById('risk-hist').scrollIntoView({behavior: 'smooth', block: 'center'}), 5500)"
+  },
+  {
+    "id": "09_ask",
+    "text": "Farmers can simply ask: what if peas drop twenty percent and I cap canola at twenty-five percent? With live AI, Claude answers by calling the optimizer as tools, so every number is computed, not guessed. Here, offline mode answers the same question with built-in rules.",
+    "action": "document.getElementById('step-ask').scrollIntoView({behavior: 'smooth', block: 'start'}); setTimeout(() => document.querySelector('.suggestion').click(), 1500)"
+  },
+  {
+    "id": "10_summary",
+    "text": "A plain-English summary and a one-page PDF are ready for your lender or agronomist. It's a planning aid, not financial advice.",
+    "action": "(() => { const b = document.getElementById('btn-explain'); if (b && !b.hidden) b.click(); document.getElementById('step-explain').scrollIntoView({behavior: 'smooth', block: 'start'}); })()"
+  },
+  {
+    "id": "11_close",
+    "text": "TradeShock S K. Built in seventy-two hours for the S C A I AI Open Saskatoon. Know your trade risk before you buy seed.",
+    "action": "window.scrollTo({top: 0, behavior: 'smooth'})"
+  }
+]
