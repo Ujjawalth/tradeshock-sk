@@ -812,9 +812,9 @@
           el("div", { class: "alert-title" }, title),
           el("div", { class: "alert-meta", text: `${a.source} · ${a.published || ""}` }),
           el("div", { class: "alert-row" },
-            imp ? el("span", { class: `impact ${cls}`, text: Math.abs(imp.change_vs_baseline) < 1
-              ? "No effect on your current plan (you don't grow these crops)"
-              : `${fmtSigned(imp.change_vs_baseline)} to your plan` }) : null,
+            imp ? (Math.abs(imp.change_vs_baseline) < 1
+              ? el("span", { class: "impact none", text: "No effect on your current plan (you don't grow these crops)" })
+              : el("span", { class: `impact ${cls}`, text: `${fmtSigned(imp.change_vs_baseline)} to your plan` })) : null,
             imp && imp.mix_changed ? el("span", { class: "hint", text: `re-planning worth ${fmtSigned(imp.value_of_replanning)}` }) : null,
             ...a.scenario.affected.map((c) => el("span", { class: "crop-chip", text: `${c.crop} ${fmtPct(c.price_change_pct)}` })),
             el("button", { type: "button", class: "btn ghost", text: "Stress-test this →", onclick: () => loadWatchItem(a) }),
