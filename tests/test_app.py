@@ -76,8 +76,8 @@ def test_sensitivity(client):
 
 def test_rate_limit_cannot_be_dodged_with_fake_forwarded_for(client, monkeypatch):
     monkeypatch.setattr(app_module.ai_limiter, "per_minute", 2)
-    payload = {"preset_id": "canola-duties", "profile": PROFILE}
-    codes = [client.post("/api/scenario", json=payload,
+    payload = {"question": "canola -10%", "profile": PROFILE}
+    codes = [client.post("/api/ask", json=payload,
                          headers={"X-Forwarded-For": f"10.0.0.{i}, 203.0.113.7"}).status_code
              for i in range(3)]
     assert codes == [200, 200, 429]  # same real client (last hop) despite fake first entries
@@ -95,6 +95,10 @@ def test_daily_ai_budget_cap(monkeypatch):
 
 def test_ai_rate_limit(client, monkeypatch):
     monkeypatch.setattr(app_module.ai_limiter, "per_minute", 2)
-    payload = {"preset_id": "canola-duties", "profile": PROFILE}
-    codes = [client.post("/api/scenario", json=payload).status_code for _ in range(3)]
+    payload = {"question": "canola -10%", "profile": PROFILE}
+    codes = [client.post("/api/ask", json=payload).status_code for _ in range(3)]
     assert codes == [200, 200, 429]
+    # presets and the sample feed never call AI, so they're never rate-limited
+    for _ in range(5):
+        assert client.post("/api/scenario", json={"preset_id": "canola-duties"}).status_code == 200
+        assert client.post("/api/watch", json={"profile": PROFILE, "mode": "sample"}).status_code == 200

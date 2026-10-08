@@ -243,8 +243,6 @@ def sweep():
 # ---------------------------------------------------------------- AI
 @app.post("/api/scenario")
 def scenario_route():
-    if (limited := rate_limited()):
-        return limited
     data = body()
     zone = (data.get("profile") or {}).get("soil_zone", "Dark Brown")
     crops = zone_crops(zone) or zone_crops("Dark Brown")
@@ -259,6 +257,9 @@ def scenario_route():
         return jsonify(scenario=scenario.model_dump(), source="cache",
                        headline=preset["headline"], hypothetical=True)
 
+    # Presets above never call the AI, so only live headlines count against the AI rate limit.
+    if (limited := rate_limited()):
+        return limited
     headline = clean_headline(data.get("headline", ""))
     if len(headline) < 8:
         return bad_request("Please paste a headline (at least a few words).")
@@ -348,11 +349,11 @@ def lock_route():
 @app.post("/api/watch")
 def watch_route():
     """Trade Watch: scan official feeds (or the HYPOTHETICAL sample) and rank alerts by $ impact."""
-    if (limited := rate_limited()):
-        return limited
     data = body()
-    profile = parse_profile(data)
     mode = "sample" if data.get("mode") == "sample" else "live"
+    if mode == "live" and (limited := rate_limited()):  # the sample feed uses no AI
+        return limited
+    profile = parse_profile(data)
     return jsonify(watch=watch.scan(profile, mode))
 
 
